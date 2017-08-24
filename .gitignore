@@ -32,6 +32,5 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 
-#packrat
-packrat/lib*/
-packrat/src/
+spikes/
+tmp/
