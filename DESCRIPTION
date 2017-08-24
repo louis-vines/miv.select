@@ -1,0 +1,18 @@
+Package: creditr
+Title: A package for fitting regression models for binary classification, specifically credit modelling.
+Version: 0.0.1
+Authors@R: person("Louis", "Vines", email = "louisgabrielvines@gmail.com", role = c("aut", "cre"))
+Description:
+  This package builds methods to aid with binary classification through regression, particularly focused on applications in credit scoring. It provides methods for supervised and unsupervised binning, single factor screening using Information Values and a variable selection algorithm based on Marginal Information Values.
+Depends: R (>= 3.3.3)
+Imports:
+  dplyr (>= 0.7.2),
+  ggplot2 (>= 2.2.1),
+  partykit (>= 1.0.5),
+  purrr (>= 0.2.2),
+  stringr (>= 1.2.0)
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+Suggests: testthat
+RoxygenNote: 6.0.1

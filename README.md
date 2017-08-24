@@ -1,3 +1,3 @@
-# global.modelling
+# creditr
 
-A toolbox to streamline predictive modelling in R intended for use in all geographies.
+A toolbox for building regression based binary classification models with applications in credit scoring.
