@@ -1,0 +1,18 @@
+Package: global.modelling
+Title: A package to ease the creation of building predictive models
+Version: 0.0.1
+Authors@R: person("Louis", "Vines", email = "louis.vines@fundingcircle.com", role = c("aut", "cre"))
+Description:
+  This package tries to speed up the task of building predictive models, mainly credit models although not specifically. It includes (eventually) functions to check data quality and stability, screen variables for predictive power, feature transformations, model fitting and model validation.
+Depends: R (>= 3.3.3)
+Imports:
+  dplyr (>= 0.7.2),
+  ggplot2 (>= 2.2.1),
+  partykit (>= 1.0.5),
+  purrr (>= 0.2.2),
+  stringr (>= 1.2.0)
+License: Dunno
+Encoding: UTF-8
+LazyData: true
+Suggests: testthat
+RoxygenNote: 6.0.1
