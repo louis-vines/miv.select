@@ -43,8 +43,6 @@
 - gini, ROC curve
 - restricted gini (shiny app?)
 
-
 ##additional features:
 - deal with missings in the supervised binning alg -> stuff into nearest bad rate or lowest weight of evidence
 - above/inside labels in bars
-
