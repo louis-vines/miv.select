@@ -5,3 +5,4 @@
 - cowplot
 - car
 - roxygen2
+- jsonlite
