@@ -1,4 +1,3 @@
-#' @import dplyr
 build_iv_table <- function(dframe, y = "gb12"){
   total_goods <- sum(dframe[[y]] == 0)
   total_bads <- sum(dframe[[y]] == 1)
