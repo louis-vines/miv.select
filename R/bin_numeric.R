@@ -1,9 +1,12 @@
+#' Numeric Factor Binning
+
+#' @export
+
 #' @importFrom partykit ctree
 #' @importFrom partykit ctree_control
 #' @importFrom purrr map
 #' @importFrom purrr discard
 #' @importFrom purrr flatten_dbl
-
 bin_numeric <- function(dframe, x, y = "gb12",
                         tree_control = ctree_control(), bins = NULL){
   FEATURE_TYPE <- 'numeric'
@@ -39,6 +42,8 @@ bin_numeric <- function(dframe, x, y = "gb12",
   binned_feature
 }
 
+#' @export
+
 predict.binned_numeric <- function(binned_feature, dframe){
   feature <- binned_feature$feature
   cuts <- binned_feature$cuts
@@ -49,6 +54,8 @@ predict.binned_numeric <- function(binned_feature, dframe){
       mutate(.x. = forcats::fct_explicit_na(.x.))
   })
 }
+
+#' @export
 
 plot.binned_numeric <- function(binned_feature, old_frame, y = 'gb12'){
   woe_plot <- binned_feature$iv_table %>%
