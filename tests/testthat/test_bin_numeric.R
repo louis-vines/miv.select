@@ -26,16 +26,6 @@ test_that("if no significant splits are found, this is reported", {
   expect_equal(binned_feature, "No significant splits found")
 })
 
-test_that("create_numeric_supervised_bins can use a different y name", {
-  german_data_different_y <- german_credit_data %>% rename(y = gb12)
-
-  binned_feature <- create_numeric_supervised_bins(german_data_different_y, x = "credit_amount", y = "y")
-  expected_names_for_data_df <- c("group", "y")
-
-  expect_equal(names(binned_feature$data), expected_names_for_data_df)
-  expect_equal_to_reference(binned_feature, "references/numeric_supervised_binned_different_y.RDS")
-})
-
 test_that("tree_control can be used to pass parameters to ctree algorithm used for binning", {
   binned_feature <- bin_numeric(german_credit_data, x = "credit_amount")
 

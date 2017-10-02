@@ -1,7 +1,6 @@
 binned_feature <- bin_factor(german_credit_data, x = "property")
-#
 
-# supervised_ordered_binned_feature <- bin_factor(german_credit_data, x = "present_employment_since", supervised = TRUE)
+supervised_ordered_binned_feature <- bin_factor(german_credit_data, x = "present_employment_since", supervised = TRUE)
 
 test_that("bin_factor creates an object of class binned_categorical", {
   expect_is(binned_feature, "binned_factor")
@@ -38,7 +37,7 @@ test_that("if supervised binning is requested then a supervised binning algorith
            to group the factor levels", {
   supervised_binned_feature <- bin_factor(german_credit_data, x = "property", supervised = TRUE)
 
-  expected_names <- c("feature", "feature_type", "cuts", "levels", "node_groups", "tree", "iv", "iv_table")
+  expected_names <- c("feature", "feature_type", "levels", "node_groups", "tree", "iv", "iv_table")
 
   expect_equal(names(supervised_binned_feature), expected_names)
   expect_equal_to_reference(supervised_binned_feature, "references/bin_factor/supervised_binned_feature.RDS")
