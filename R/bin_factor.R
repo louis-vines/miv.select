@@ -1,10 +1,10 @@
-bin_factor <- function(dframe, x, y = "gb12", supervised = FALSE){
+bin_factor <- function(dframe, x, y = "gb12", supervised = FALSE, tree_control = ctree_control()){
   feature_is_ordered <- "ordered" %in% class(dframe[[x]])
 
   feature_type <- if(feature_is_ordered) "ordered_factor" else "factor"
 
   if(supervised){
-    binned_data <- supervised_factor_grouping(dframe, x, y)
+    binned_data <- supervised_factor_grouping(dframe, x, y, tree_control = tree_control)
     dframe <- binned_data$data
   } else {
     dframe <- dframe %>% rename(group = !!x)
@@ -35,11 +35,12 @@ bin_factor <- function(dframe, x, y = "gb12", supervised = FALSE){
 }
 
 #' @importFrom purrr map
-supervised_factor_grouping <- function(dframe, x, y){
+supervised_factor_grouping <- function(dframe, x, y, tree_control){
   if(!is.factor(dframe[[x]])) dframe[[x]] <- factor(dframe[[x]])
   if(!is.factor(dframe[[y]])) dframe[[y]] <- factor(dframe[[y]])
 
-  tree_obj <- ctree(formula(paste(y, "~", x)), data = dframe, na.action = na.pass)
+  tree_obj <- ctree(formula(paste(y, "~", x)), data = dframe,
+                    na.action = na.pass, control = tree_control)
 
   tree_len <- length(tree_obj)
 

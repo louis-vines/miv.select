@@ -15,8 +15,8 @@ test_that("if not specified, the algorithm treats each factor level as
   expect_equal_to_reference(binned_feature, "references/bin_factor/binned_feature.RDS")
 })
 
-test_that("if the feature that was binned isn't an ordered factor the iv_table is ordered
-           by the woe", {
+test_that("if the feature that was binned isn't an ordered factor,
+           the iv_table is ordered by the woe", {
   expect_equal(sort(binned_feature$iv_table$woe), binned_feature$iv_table$woe)
 })
 
@@ -42,3 +42,18 @@ test_that("if supervised binning is requested then a supervised binning algorith
   expect_equal(names(supervised_binned_feature), expected_names)
   expect_equal_to_reference(supervised_binned_feature, "references/bin_factor/supervised_binned_feature.RDS")
 })
+
+test_that("tree_control can be used to pass parameters to ctree algorithm used for binning", {
+  binned_feature <- bin_factor(german_credit_data, x = "property", supervised = TRUE)
+
+  bin_with_small_tree <- bin_factor(
+    german_credit_data,
+    x = "property",
+    supervised = TRUE,
+    tree_control = ctree_control(maxdepth = 1)
+  )
+
+  expect_gt(length(binned_feature$tree), length(bin_with_small_tree$tree))
+})
+
+
