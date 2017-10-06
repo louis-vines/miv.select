@@ -56,4 +56,21 @@ test_that("tree_control can be used to pass parameters to ctree algorithm used f
   expect_gt(length(binned_feature$tree), length(bin_with_small_tree$tree))
 })
 
+test_that("binned_factor objects have a predict method, if supervised binning was not used for the binning
+           process the transformed dataframe is the same as the original dataframe", {
+  data_with_binned_feature <- predict(binned_feature, german_credit_data)
 
+  expect_equal(german_credit_data, data_with_binned_feature)
+})
+
+test_that("binned_factor objects have a predict method, if supervised binning was used for the binning
+           process the transformed dataframe is the same as the original dataframe", {
+  feature_to_bin <- "property"
+  binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
+
+  data_with_binned_feature <- predict(binned_feature, german_credit_data)
+  expected_factor_levels <- c("real estate", "car or other; svngs. agrrement", "unknown/no")
+
+
+  expect_true(all(data_with_binned_feature[[feature_to_bin]] %in% expected_factor_levels))
+})
