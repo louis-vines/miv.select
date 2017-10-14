@@ -92,3 +92,49 @@ predict.binned_factor <- function(binned_feature, dframe){
   dframe %>% select(-node, -group)
 }
 
+plot.binned_factor <- function(binned_feature, old_frame, y = 'gb12'){
+  woe_plot <- binned_feature$iv_table %>%
+    ggplot(aes(group, woe)) +
+    geom_bar(stat = 'identity') +
+    geom_hline(yintercept = 0, alpha = 0.5) +
+    ggtitle('Weight of Evidence')
+
+  bad_rate_plot <- binned_feature$iv_table %>%
+    ggplot(aes(group, bad_rate)) +
+    geom_bar(stat = 'identity') +
+    ggtitle('Bad Rate')
+
+  freq_plot <- binned_feature$iv_table %>%
+    ggplot(aes(group, freq)) +
+    geom_bar(stat = 'identity') +
+    ggtitle('Frequency')
+
+  if(missing(old_frame)){
+    return(
+      cowplot::plot_grid(woe_plot + remove_x_axis(),
+                         bad_rate_plot + remove_x_axis(),
+                         freq_plot,
+                         nrow = 3)
+    )
+  }
+
+  feature_name <- binned_feature$feature
+  old_frame[[y]] <- factor(old_frame[[y]])
+
+  distribution_plot <- old_frame %>%
+    group_by_(y, feature_name) %>%
+    summarise(freq = n()) %>%
+    mutate(density = freq / sum(freq)) %>%
+    ggplot(aes_string(feature_name, y = "density", fill = y)) +
+    geom_bar(position = 'dodge', stat = 'identity') +
+    ggtitle('Prebinned') +
+    scale_colour_discrete(labels = c('good', 'bad')) +
+    #scale_fill_discrete(labels = c('good', 'bad')) +
+    theme(legend.title = element_blank(), legend.position = c(0.85, 0.85))
+
+  cowplot::plot_grid(distribution_plot ,
+                     woe_plot,
+                     freq_plot,
+                     bad_rate_plot,
+                     nrow = 2)
+}

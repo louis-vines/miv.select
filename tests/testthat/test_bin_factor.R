@@ -64,7 +64,7 @@ test_that("binned_factor objects have a predict method, if supervised binning wa
 })
 
 test_that("binned_factor objects have a predict method, if supervised binning was used for the binning
-           process the transformed dataframe is the same as the original dataframe", {
+           process the category groupings is applied to the relevant column", {
   feature_to_bin <- "property"
   binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
 
@@ -73,4 +73,20 @@ test_that("binned_factor objects have a predict method, if supervised binning wa
 
 
   expect_true(all(data_with_binned_feature[[feature_to_bin]] %in% expected_factor_levels))
+})
+
+test_that("binned_factor objects have a plot method that creates a graph with 3 elements", {
+  binned_feature <- bin_factor(german_credit_data, x = "property")
+  binned_feature_plot <- plot(binned_feature)
+
+  expect_equal(length(binned_feature_plot$layers), 3)
+  purrr::walk(binned_feature_plot$layers, ~ expect_is(.x, "ggproto"))
+})
+
+test_that("if the original data set is also passed to the plot method the plot has 4 elements", {
+  binned_feature <- bin_factor(german_credit_data, x = "property")
+  binned_feature_plot <- plot(binned_feature, german_credit_data)
+
+  expect_equal(length(binned_feature_plot$layers), 4)
+  purrr::walk(binned_feature_plot$layers, ~ expect_is(.x, "ggproto"))
 })
