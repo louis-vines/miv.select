@@ -1,3 +1,9 @@
 #!/usr/bin/env Rscript
+test_filepaths <- commandArgs(trailingOnly = TRUE)
 
-devtools::test()
+if(length(test_filepaths) > 0){
+  match_pattern <- stringr::str_match(test_filepaths, "testthat/test_(.+)\\.R")[1, 2]
+  devtools::test(filter = match_pattern)
+} else {
+  devtools::test()
+}
