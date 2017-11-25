@@ -26,3 +26,5 @@ vignettes/*.pdf
 
 spikes/
 tmp/
+
+tests/testthat/Rplots.pdf

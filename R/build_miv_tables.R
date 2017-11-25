@@ -1,4 +1,3 @@
-#' @import dplyr
 build_miv_tables <- function(dframe, y = "gb12", pd = "pd"){
   total_goods <- sum(dframe[[y]] == 0)
   total_bads <- sum(dframe[[y]] == 1)
