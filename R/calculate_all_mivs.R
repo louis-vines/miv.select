@@ -12,10 +12,15 @@ calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd"){
 }
 
 calculate_miv <- function(dframe, binned_x, y = "gb12", pd = "pd"){
+  feature_is_categorical <- dframe[[binned_x]] %>% {is.character(.) | is.factor(.)}
+
+  if(!feature_is_categorical){
+    stop("cannot calculate miv for a non-categorical variable")
+  }
+
   miv_tables <- dframe %>%
     rename_(group = binned_x) %>%
     build_miv_tables(y, pd)
 
   c(miv_tables, iv = sum(miv_tables$miv_table$iv), miv = sum(miv_tables$miv_table$miv))
 }
-

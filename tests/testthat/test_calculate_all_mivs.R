@@ -8,8 +8,8 @@ credit_data_w_pd <- credit_data_small %>%
   mutate(pd = predict(candidate_model, ., type = "response"))
 
 test_that("given a data frame with a response variable named gb12
-          and pd predictions from a previous model calculate_all_mivs
-          calculates the marginal iv for all variables", {
+           and pd predictions from a previous model,
+           calculate_all_mivs calculates the marginal iv for all variables", {
   miv_output <- calculate_all_mivs(credit_data_w_pd)
 
   expected_output <- data_frame(
@@ -19,4 +19,25 @@ test_that("given a data frame with a response variable named gb12
   )
 
   expect_equal(miv_output, expected_output)
+})
+
+test_that("the feature data types can be factor or character", {
+  #current data types of features are all character
+  #so we need to test a factor variable
+  credit_data_w_pd$purpose <- factor(credit_data_w_pd$purpose)
+
+  expect_error(calculate_all_mivs(credit_data_w_pd), NA)
+
+
+})
+
+test_that("if numeric variables are included an error is thrown", {
+  numeric_col <- german_credit_data %>% select(duration)
+
+  credit_data_w_pd <- bind_rows(credit_data_w_pd, numeric_col)
+
+  expect_error(
+    calculate_all_mivs(credit_data_w_pd),
+    "cannot calculate miv for a non-categorical variable"
+  )
 })
