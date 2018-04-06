@@ -1,9 +1,13 @@
 #' @importFrom purrr map_dbl
-calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd"){
+calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd", as_dframe = TRUE){
   features_to_bin <- setdiff(names(dframe), c(y, pd))
 
   mivs <- map(features_to_bin, function(name) calculate_miv(dframe, name, y, pd)) %>%
     setNames(features_to_bin)
+
+  if(!as_dframe){
+    return(mivs)
+  }
 
   data_frame(feature_name = names(mivs),
              iv = map_dbl(mivs, "iv"),

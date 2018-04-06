@@ -41,3 +41,14 @@ test_that("if numeric variables are included an error is thrown", {
     "cannot calculate miv for a non-categorical variable"
   )
 })
+
+test_that("if as_dframe = FALSE a detailed output of the miv calculations
+           is presented in list form", {
+  miv_output <- calculate_all_mivs(credit_data_w_pd, as_dframe = FALSE)
+  expected_output_names <- c("actual_woe", "expected_woe",
+                             "miv_table", "iv", "miv")
+
+  purrr::walk(miv_output, function(output_element) {
+    expect_equal(names(output_element), expected_output_names)
+  })
+})
