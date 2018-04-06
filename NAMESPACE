@@ -2,6 +2,7 @@
 
 S3method(plot,binned_numeric)
 S3method(predict,binned_numeric)
+export(bin_all)
 export(bin_numeric)
 import(dplyr)
 import(ggplot2)
@@ -10,4 +11,5 @@ importFrom(partykit,ctree_control)
 importFrom(purrr,discard)
 importFrom(purrr,flatten_dbl)
 importFrom(purrr,map)
+importFrom(purrr,map_dbl)
 importFrom(stringr,str_replace)
