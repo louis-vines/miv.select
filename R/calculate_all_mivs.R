@@ -1,6 +1,15 @@
 #' @importFrom purrr map_dbl
-calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd", as_dframe = TRUE){
+calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd", vars_to_exclude,
+                               vars_to_include, as_dframe = TRUE){
   features_to_bin <- setdiff(names(dframe), c(y, pd))
+
+  if(!missing(vars_to_exclude)){
+    features_to_bin <- setdiff(features_to_bin, vars_to_exclude)
+  }
+
+  if(!missing(vars_to_include)){
+    features_to_bin <- intersect(features_to_bin, vars_to_include)
+  }
 
   mivs <- map(features_to_bin, function(name) calculate_miv(dframe, name, y, pd)) %>%
     setNames(features_to_bin)

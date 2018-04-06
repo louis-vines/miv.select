@@ -27,8 +27,6 @@ test_that("the feature data types can be factor or character", {
   credit_data_w_pd$purpose <- factor(credit_data_w_pd$purpose)
 
   expect_error(calculate_all_mivs(credit_data_w_pd), NA)
-
-
 })
 
 test_that("if numeric variables are included an error is thrown", {
@@ -51,4 +49,20 @@ test_that("if as_dframe = FALSE a detailed output of the miv calculations
   purrr::walk(miv_output, function(output_element) {
     expect_equal(names(output_element), expected_output_names)
   })
+})
+
+test_that("user can specify which variables are excluded in the calculation", {
+  miv_output <- calculate_all_mivs(credit_data_w_pd, vars_to_exclude = "purpose")
+  expected_features_included <- c("credit_history", "ca_status")
+
+  expect_equal(miv_output$feature_name, expected_features_included)
+})
+
+test_that("user can specify which variables are included in the calculation", {
+  miv_output <- calculate_all_mivs(credit_data_w_pd,
+                                   vars_to_include = c("ca_status", "purpose"))
+
+  expected_features_included <- c("purpose", "ca_status")
+
+  expect_equal(miv_output$feature_name, expected_features_included)
 })
