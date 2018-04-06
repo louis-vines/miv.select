@@ -1,4 +1,6 @@
 #' @importFrom purrr map_dbl
+#'
+#' @export
 calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd", vars_to_exclude,
                                vars_to_include, as_dframe = TRUE){
   features_to_bin <- setdiff(names(dframe), c(y, pd))
