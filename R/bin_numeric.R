@@ -15,10 +15,12 @@ bin_numeric <- function(dframe, x, y = "gb12",
     binned_data <- create_numeric_supervised_bins(dframe, x, y = y,
                                                   tree_control = tree_control)
 
-    no_splits_were_found <- is.atomic(binned_data)
+    if(!binned_data$significant_splits_found){
+      output <- list(feature = x,
+                     feature_type = FEATURE_TYPE,
+                     significant_splits_found = binned_data$significant_splits_found)
 
-    if(no_splits_were_found){
-      return(binned_data)
+      return(output)
     }
 
   } else {
@@ -31,6 +33,7 @@ bin_numeric <- function(dframe, x, y = "gb12",
 
   binned_feature <- list(feature = x,
                          feature_type = FEATURE_TYPE,
+                         significant_splits_found = binned_data$significant_splits_found,
                          cuts = binned_data$cuts,
                          levels = bin_levels,
                          tree = binned_data$tree,
@@ -109,7 +112,7 @@ create_numeric_supervised_bins <- function(dframe, x, y = "gb12", tree_control =
 
   nbins <- partykit::width(tree_obj)
   if(nbins < 2){
-    return("No significant splits found")
+    return(list(significant_splits_found = FALSE))
   }
 
   tree_len <- length(tree_obj)
@@ -123,7 +126,7 @@ create_numeric_supervised_bins <- function(dframe, x, y = "gb12", tree_control =
     mutate(group = cut_vector(!!x_sym, breaks = cuts)) %>%
     select(group, !!y_sym)
 
-  list(data = binned_data, cuts = cuts, tree = tree_obj)
+  list(data = binned_data, significant_splits_found = TRUE, cuts = cuts, tree = tree_obj)
 }
 
 create_numeric_frequency_bins <- function(dframe, x, y, bins=10){
