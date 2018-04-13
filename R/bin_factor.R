@@ -79,7 +79,7 @@ predict.binned_factor <- function(binned_feature, dframe){
 
   dframe[[feature]] <- factor(dframe[[feature]])
 
-  dframe$node <- predict(binned_feature$tree, newdata = dframe[,"property"], type = 'node')
+  dframe$node <- predict(binned_feature$tree, newdata = dframe %>% select(!!feature), type = 'node')
   dframe$node <- if_else(is.na(dframe[[feature]]), NA_integer_, dframe$node)
 
   dframe %<>%
