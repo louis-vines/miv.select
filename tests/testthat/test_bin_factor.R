@@ -69,10 +69,20 @@ test_that("binned_factor objects have a predict method, if supervised binning wa
   binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
 
   data_with_binned_feature <- predict(binned_feature, german_credit_data)
-  expected_factor_levels <- c("real estate", "car or other; svngs. agrrement", "unknown/no")
+  binned_levels <- binned_feature$levels
 
 
-  expect_true(all(data_with_binned_feature[[feature_to_bin]] %in% expected_factor_levels))
+  expect_true(all(data_with_binned_feature[[feature_to_bin]] %in% binned_levels))
+})
+
+test_that("the binned_factor predict method works with features other than property", {
+  feature_to_bin <- "ca_status"
+  binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
+
+  data_with_binned_feature <- predict(binned_feature, german_credit_data)
+  binned_levels <- binned_feature$levels
+
+  expect_true(all(data_with_binned_feature[[feature_to_bin]] %in% binned_levels))
 })
 
 test_that("binned_factor objects have a plot method that creates a graph with 3 elements", {
