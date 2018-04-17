@@ -1,4 +1,4 @@
 library(testthat)
-library(creditr)
+library(miv.select)
 
-test_check("creditr")
+test_check("miv.select")
