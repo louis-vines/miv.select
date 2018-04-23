@@ -46,13 +46,12 @@ bin_numeric <- function(dframe, x, y = "gb12",
 
 predict.binned_numeric <- function(binned_feature, dframe){
   feature <- binned_feature$feature
+  feature_sym <- as.symbol(feature)
   cuts <- binned_feature$cuts
 
-  wrapr::let(list(.x. = feature), {
-    dframe %>%
-      mutate(.x. = cut_vector(.x., breaks = cuts)) %>%
-      mutate(.x. = forcats::fct_explicit_na(.x.))
-  })
+  dframe %>%
+    mutate(!!feature_sym := cut_vector(!!feature_sym, breaks = cuts)) %>%
+    mutate(!!feature_sym := forcats::fct_explicit_na(!!feature_sym))
 }
 
 #' @export
@@ -100,6 +99,9 @@ plot.binned_numeric <- function(binned_feature, old_frame, y = 'gb12'){
 }
 
 create_numeric_supervised_bins <- function(dframe, x, y = "gb12", tree_control = ctree_control()){
+  x_sym <- as.symbol(x)
+  y_sym <- as.symbol(y)
+
   dframe[[y]] <- factor(dframe[[y]])
 
   tree_obj <- ctree(formula(paste(y, "~", x)), data = dframe, na.action = na.exclude,
@@ -117,11 +119,9 @@ create_numeric_supervised_bins <- function(dframe, x, y = "gb12", tree_control =
     flatten_dbl %>%
     sort
 
-  binned_data <- wrapr::let(list(.x. = x, .y. = y), {
-    dframe %>%
-      mutate(group = cut_vector(.x., breaks = cuts)) %>%
-      select(group, .y.)
-  })
+  binned_data <- dframe %>%
+    mutate(group = cut_vector(!!x_sym, breaks = cuts)) %>%
+    select(group, !!y_sym)
 
   list(data = binned_data, cuts = cuts, tree = tree_obj)
 }
@@ -135,6 +135,10 @@ create_numeric_frequency_bins <- function(dframe, x, y, bins=10){
     stop("in create_numeric_frequency_bins bins argument must be integer >=2")
   }
 
+  x_sym <- as.symbol(x)
+  y_sym <- as.symbol(y)
+
+
   if(length(unique(dframe[[x]])) <= bins){
     cuts <- unique(dframe[[x]]) %>%
       sort %>%
@@ -144,11 +148,9 @@ create_numeric_frequency_bins <- function(dframe, x, y, bins=10){
     cuts <- as.vector(quantile(dframe[[x]], quantile_cuts, na.rm = T))
   }
 
-  binned_data <- wrapr::let(list(.x. = x, .y. = y), {
-    dframe %>%
-      mutate(group = cut_vector(.x., cuts)) %>%
-      select(group, .y.)
-  })
+  binned_data <- dframe %>%
+    mutate(group = cut_vector(!!x_sym, cuts)) %>%
+    select(group, !!y_sym)
 
   list(data = binned_data, cuts = cuts)
 }
