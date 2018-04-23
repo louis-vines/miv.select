@@ -38,6 +38,8 @@ bin_factor <- function(dframe, x, y = "gb12", supervised = FALSE, tree_control =
 #' @importFrom purrr map
 #' @importFrom partykit ctree
 supervised_factor_grouping <- function(dframe, x, y, tree_control){
+  x_sym <- as.symbol(x)
+
   if(!is.factor(dframe[[x]])) dframe[[x]] <- factor(dframe[[x]])
   if(!is.factor(dframe[[y]])) dframe[[y]] <- factor(dframe[[y]])
 
@@ -52,16 +54,15 @@ supervised_factor_grouping <- function(dframe, x, y, tree_control){
     sort %>%
     {levels(dframe[[x]])[.]}
 
-  wrapr::let(list(.x. = x), {
-    dframe <- dframe %>%
-      mutate(node = predict(tree_obj, newdata = ., type = 'node')) %>%
-      mutate(node = if_else(is.na(.x.), NA_integer_, node))
+  dframe <- dframe %>%
+    mutate(node = predict(tree_obj, newdata = ., type = 'node')) %>%
+    mutate(node = if_else(is.na(!!x_sym), NA_integer_, node))
 
-    node_groups <- dframe %>%
-      filter(!is.na(node)) %>%
-      group_by(node) %>%
-      summarise(group = .x. %>% unique %>% sort %>% stringr::str_c(collapse = "; "))
-  })
+  node_groups <- dframe %>%
+    filter(!is.na(node)) %>%
+    group_by(node) %>%
+    summarise(group = (!!x_sym) %>% unique %>% sort %>% stringr::str_c(collapse = "; "))
+
 
   binned_data <- dframe %>%
     left_join(node_groups, by = "node") %>%

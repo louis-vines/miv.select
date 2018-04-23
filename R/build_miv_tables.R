@@ -1,4 +1,6 @@
 build_miv_tables <- function(dframe, y = "gb12", pd = "pd"){
+  pd_sym = as.symbol(pd)
+
   total_goods <- sum(dframe[[y]] == 0)
   total_bads <- sum(dframe[[y]] == 1)
   total_log_odds <- log(total_bads / total_goods)
@@ -6,20 +8,18 @@ build_miv_tables <- function(dframe, y = "gb12", pd = "pd"){
   actual_woe <- build_iv_table(dframe, y = y) %>%
     select(-iv)
 
-  expected_woe <- wrapr::let(list(.pd. = pd), {
-    dframe %>%
-      group_by(group) %>%
-      summarise(freq = n(),
-                freq_bad = sum(.pd.),
-                freq_good = sum(1 - .pd.)) %>%
-      mutate(prop_total = freq / sum(freq),
-             bad_rate = freq_bad / freq,
-             odds = freq_bad / freq_good,
-             log_odds = log(odds),
-             woe = log_odds - total_log_odds) %>%
-      mutate_if(is.numeric, ~ round(.x, 5)) %>%
-      mutate(group = forcats::fct_explicit_na(group))
-  })
+  expected_woe <- dframe %>%
+    group_by(group) %>%
+    summarise(freq = n(),
+              freq_bad = sum(!!pd_sym),
+              freq_good = sum(1 - (!!pd_sym))) %>%
+    mutate(prop_total = freq / sum(freq),
+           bad_rate = freq_bad / freq,
+           odds = freq_bad / freq_good,
+           log_odds = log(odds),
+           woe = log_odds - total_log_odds) %>%
+    mutate_if(is.numeric, ~ round(.x, 5)) %>%
+    mutate(group = forcats::fct_explicit_na(group))
 
   attr(expected_woe$group, "class") <- "factor"
 
