@@ -6,23 +6,31 @@ test_that("bin_numeric creates an object of class binned_numeric", {
 })
 
 test_that("bin_numeric creates bins based on a supervised binning alg", {
-  expected_names <- c("feature", "feature_type", "cuts", "levels", "tree", "iv", "iv_table")
+  expected_names <- c("feature", "feature_type", "significant_splits_found",
+                      "cuts", "levels", "tree", "iv", "iv_table")
 
   expect_equal(names(binned_feature), expected_names)
-  expect_equal_to_reference(binned_feature, "references/bin_numeric/supervised_binned.RDS")
+  expect_known_value(binned_feature, "references/bin_numeric/supervised_binned.RDS")
 })
 
 test_that("bin_numeric can accept different names for y variable", {
   german_data_different_y <- german_credit_data %>% rename(y = gb12)
 
   binned_feature <- bin_numeric(german_data_different_y, x = "credit_amount", y = "y")
-  expect_equal_to_reference(binned_feature, "references/bin_numeric/supervised_binned_new_y.RDS")
+  expect_known_value(binned_feature, "references/bin_numeric/supervised_binned_new_y.RDS")
 })
 
 test_that("if no significant splits are found, this is reported", {
-  binned_feature <- bin_numeric(german_credit_data, x = "existing_credits")
+  x <- "existing_credits"
 
-  expect_equal(binned_feature, "No significant splits found")
+  binned_feature <- bin_numeric(german_credit_data, x = x)
+  expected_output <- list(
+    feature = x,
+    feature_type = "numeric",
+    significant_splits_found = FALSE
+  )
+
+  expect_equal(binned_feature, expected_output)
 })
 
 test_that("tree_control can be used to pass parameters to ctree algorithm used for binning", {
