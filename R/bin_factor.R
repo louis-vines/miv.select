@@ -71,26 +71,47 @@ supervised_factor_grouping <- function(dframe, x, y, tree_control){
   list(data = binned_data, node_groups = node_groups, tree = tree_obj)
 }
 
-predict.binned_factor <- function(binned_feature, dframe){
-  binned_feature_was_supervised <- "tree" %in% names(binned_feature)
-
-  if(!binned_feature_was_supervised) return(dframe)
-
+predict.binned_factor <- function(binned_feature, dframe, largest_level_first = TRUE){
   feature <- binned_feature$feature
-
+  binned_feature_was_supervised <- "tree" %in% names(binned_feature)
   dframe[[feature]] <- factor(dframe[[feature]])
 
-  dframe$node <- predict(binned_feature$tree, newdata = dframe %>% select(!!feature), type = 'node')
-  dframe$node <- if_else(is.na(dframe[[feature]]), NA_integer_, dframe$node)
+  if(binned_feature_was_supervised){
+    dframe <- apply_binning_to_factor_feature(dframe, binned_feature, feature)
+  }
+
+  if(largest_level_first){
+     dframe <- reorder_factor_with_largest_group_first(dframe, binned_feature)
+  }
+  
+  dframe
+}
+
+apply_binning_to_factor_feature <- function(dframe, binned_feature, feature_name){
+  dframe$node <- predict(binned_feature$tree, newdata = dframe %>% select(!!feature_name), type = 'node')
+  dframe$node <- if_else(is.na(dframe[[feature_name]]), NA_integer_, dframe$node)
 
   dframe %<>%
     left_join(binned_feature$node_groups, by = 'node') %>%
     mutate(group = forcats::fct_explicit_na(group))
 
-  dframe[[feature]] <- dframe$group
+  dframe[[feature_name]] <- dframe$group
 
+  dframe <- dframe %>% 
+    select(-node, -group)
+}
 
-  dframe %>% select(-node, -group)
+reorder_factor_with_largest_group_first <- function(dframe, binned_feature){
+  feature_sym <- as.symbol(binned_feature$feature)
+
+  largest_factor_level <- binned_feature$iv_table %>%
+    filter(freq == max(freq)) %>%
+    purrr::pluck("group") %>%
+    first() %>%
+    as.character()
+
+   dframe %>%
+    mutate(!!feature_sym := forcats::fct_relevel(!!feature_sym, largest_factor_level))  
 }
 
 plot.binned_factor <- function(binned_feature, old_frame, y = 'gb12'){

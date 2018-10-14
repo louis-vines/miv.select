@@ -47,14 +47,25 @@ bin_numeric <- function(dframe, x, y = "gb12",
 
 #' @export
 
-predict.binned_numeric <- function(binned_feature, dframe){
+predict.binned_numeric <- function(binned_feature, dframe, largest_level_first = TRUE){
   feature <- binned_feature$feature
   feature_sym <- as.symbol(feature)
   cuts <- binned_feature$cuts
 
-  dframe %>%
+  dframe <- dframe %>%
     mutate(!!feature_sym := cut_vector(!!feature_sym, breaks = cuts)) %>%
     mutate(!!feature_sym := forcats::fct_explicit_na(!!feature_sym))
+
+  if(!largest_level_first) return(dframe)
+
+  largest_factor_level <- binned_feature$iv_table %>%
+    filter(freq == max(freq)) %>%
+    purrr::pluck("group") %>%
+    first() %>%
+    as.character()
+
+    dframe %>%
+      mutate(!!feature_sym := forcats::fct_relevel(!!feature_sym, largest_factor_level))
 }
 
 #' @export
