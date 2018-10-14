@@ -56,11 +56,45 @@ test_that("tree_control can be used to pass parameters to ctree algorithm used f
   expect_gt(length(binned_feature$tree), length(bin_with_small_tree$tree))
 })
 
-test_that("binned_factor objects have a predict method, if supervised binning was not used for the binning
-           process the transformed dataframe is the same as the original dataframe", {
-  data_with_binned_feature <- predict(binned_feature, german_credit_data)
+describe("predict.binned_factor()", {
+  feature_to_bin <- "property"
+    # we change the level names here as otherwise the largest_freq test passes without the
+    # correct code implementation as "car or other" is alphabetically first so is first factor level
+  german_credit_data <- german_credit_data %>%
+  mutate(property = property %>% replace(. == "car or other", "xcar or other"))
 
-  expect_equal(german_credit_data, data_with_binned_feature)
+  describe("when non-supervised binning is used to create the binned factor", {
+    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin)
+
+    it("reorders the factor levels to have the largest category first", {
+      data_with_binned_feature <- predict(binned_feature, german_credit_data)
+      expected_factor_levels <- c("xcar or other", "real estate", "svngs. agrrement", "unknown/no")
+      
+      expect_equal(levels(data_with_binned_feature[[feature_to_bin]]), expected_factor_levels)
+    })
+  })
+
+  describe("when supervised binning was used to create the binned_factor", {    
+    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
+
+    it("applies the categorical groupings to the relevant column with the largest category as the first group", {
+      data_with_binned_feature <- predict(binned_feature, german_credit_data)
+      expected_factor_levels <- c("svngs. agrrement; xcar or other", "real estate", "unknown/no")
+      
+      expect_equal(levels(data_with_binned_feature[[feature_to_bin]]), expected_factor_levels)
+    })
+  })
+
+  describe("largest_level_first is false", {
+    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin)
+    data_with_binned_feature <- predict(binned_feature, german_credit_data, largest_level_first = FALSE)
+
+    it("does not reorder the factor levels to have the largest first", {
+      expected_factor_levels <- c("real estate", "svngs. agrrement", "unknown/no", "xcar or other")
+      
+      expect_equal(levels(data_with_binned_feature[[feature_to_bin]]), expected_factor_levels)
+    })
+  })
 })
 
 test_that("binned_factor objects have a predict method, if supervised binning was used for the binning
