@@ -12,7 +12,7 @@ test_that("if not specified, the algorithm treats each factor level as
   expected_names <- c("feature", "feature_type", "levels", "iv", "iv_table")
 
   expect_equal(names(binned_feature), expected_names)
-  expect_equal_to_reference(binned_feature, "references/bin_factor/binned_feature.RDS")
+  expect_known_output(binned_feature, "references/bin_factor/binned_feature.RDS")
 })
 
 test_that("if the feature that was binned isn't an ordered factor,
@@ -40,7 +40,7 @@ test_that("if supervised binning is requested then a supervised binning algorith
   expected_names <- c("feature", "feature_type", "levels", "node_groups", "tree", "iv", "iv_table")
 
   expect_equal(names(supervised_binned_feature), expected_names)
-  expect_equal_to_reference(supervised_binned_feature, "references/bin_factor/supervised_binned_feature.RDS")
+  expect_known_output(supervised_binned_feature, "references/bin_factor/supervised_binned_feature.RDS")
 })
 
 test_that("tree_control can be used to pass parameters to ctree algorithm used for binning", {
