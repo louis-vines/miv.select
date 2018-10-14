@@ -1,3 +1,27 @@
 # miv.select
 
 This package builds methods to aid with binary classification through logistic regression based methods (including GLMNet and GAMS), particularly focused on applications in credit scoring. It provides methods for supervised and unsupervised binning, single factor screening using information values and a variable selection algorithm based on marginal information values.
+
+## Development
+
+the `bin` folder provides command line executables for testing and documenting for those who prefer devevlopment at the command line.
+
+Update documentation and namespace from a \*nix shell:
+
+```
+$ bin/document
+```
+
+Run all tests from a unix shell:
+
+```
+$ bin/run
+```
+
+Run only a specific file:
+
+```
+$ bin/run <path/to/file>
+```
+
+**NB** tests require testthat version > 2.0.0 to run as expected.
