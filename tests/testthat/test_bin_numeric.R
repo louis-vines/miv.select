@@ -84,14 +84,27 @@ test_that("if bins is not an integer >= 2 an error is raised", {
   expect_error(bin_numeric(feature_to_bin, bins=3.2), regexp=error_regex)
 })
 
-test_that("binned_numeric objects have a predict method which bins the relevant column
-           on a new dataframe", {
-  feature_to_bin <- "credit_amount"
-
+describe("predict.binned_numeric()", {
+  feature_to_bin <- "duration"
   binned_feature <- bin_numeric(german_credit_data, x = feature_to_bin)
-  data_with_binned_feature <- predict(binned_feature, german_credit_data)
 
-  expect_true(all(data_with_binned_feature[[feature_to_bin]] %in% binned_feature$levels))
+  it("bins the relevant features with the largest category in the factor as the first level", {
+    df_with_binned_feature <- predict(binned_feature, german_credit_data)
+
+    binned_feature_levels <- levels(df_with_binned_feature$duration)
+    expected_levels <- c("(11,33]", "(,11]", "(33,]")
+
+    expect_equal(binned_feature_levels, expected_levels)
+  })
+
+  describe("when largest_level_first is false", {
+    it("bins the relevant feature column with the levels in ascending order", {
+      df_with_binned_feature <- predict(binned_feature, german_credit_data, largest_level_first = FALSE)
+      expected_levels <- c("(,11]", "(11,33]", "(33,]")
+
+      expect_true(all(df_with_binned_feature[[feature_to_bin]] %in% binned_feature$levels))
+    })
+  })
 })
 
 test_that("binned_numeric objects has a plot method that creates a graph with 3 elements", {
