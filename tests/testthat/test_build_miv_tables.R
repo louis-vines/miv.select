@@ -1,13 +1,10 @@
-suppressMessages(library(dplyr))
-suppressMessages(library(readr))
-
 ca_status_levels <- c("No Acc.", "(;0DM)", "<0DM;200DM)", "<200DM;)")
 
-grouped_ca_status <- read_csv(
+grouped_ca_status <- readr::read_csv(
   "fixtures/binned_ca_status.csv",
-  col_types = cols(ca_status = col_factor(levels = ca_status_levels),
-                   gb12 = col_integer(),
-                   pd = col_number())
+  col_types = readr::cols(ca_status = readr::col_factor(levels = ca_status_levels),
+                   gb12 = readr::col_integer(),
+                   pd = readr::col_number())
 ) %>%
   mutate(ca_status = factor(ca_status, ordered = TRUE)) %>%
   rename(group = ca_status)
