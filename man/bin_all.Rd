@@ -4,7 +4,7 @@
 \alias{bin_all}
 \title{Bin All Features in a Dataframe}
 \usage{
-bin_all(dframe, y = "gb12", vars_to_exclude, vars_to_include, bins = NULL,
+bin_all(dframe, y, vars_to_exclude, vars_to_include, bins = NULL,
   tree_control = ctree_control(), verbose = FALSE)
 }
 \description{

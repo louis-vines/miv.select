@@ -65,9 +65,8 @@ test_that("the tree_control argument is passed to the atomic binning functions",
       paste(tree_control, bin_numeric_marker)
     },
     {
-  
       binned_objects <- bin_all(data_for_binning, "gb12", tree_control = control_val)
-      expect_equal(binned_objects, expected_output)
+      expect_equal(binned_objects, expected_output, check.attributes = FALSE)
     }
   )
 })
