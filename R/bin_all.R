@@ -59,3 +59,24 @@ print.binned_features <- function(binned_features, ...){
 
   do.call(tibble:::print.tbl_df, all_args_for_call)
 }
+
+plot.binned_features <- function(binned_features, train_data){
+  iv_summary <- attr(binned_features, "iv_summary")
+
+  for (feature in iv_summary$feature) {
+    cat("==", feature, "==\n")
+
+    iv <- binned_features[[feature]]$iv
+    if (is.null(iv) || is.na(iv)) {
+      cat("feature has no IV value\n")
+      next()
+    }
+
+    cat("iv: ", iv , "\n")
+    print(plot(binned_features[[feature]], train_data))
+    input_val <- readline("Input q to quit or hit Enter to continue:")
+    if (str_to_lower(input_val) == 'q') {
+      break()
+    }
+  }
+}
