@@ -1,4 +1,4 @@
-build_miv_tables <- function(dframe, y = "gb12", pd = "pd"){
+build_miv_tables <- function(dframe, y, pd = "pd"){
   pd_sym = as.symbol(pd)
 
   total_goods <- sum(dframe[[y]] == 0)

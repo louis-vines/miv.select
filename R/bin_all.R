@@ -1,7 +1,7 @@
 #' Bin All Features in a Dataframe
 #' 
 #' @export 
-bin_all <- function(dframe, y = "gb12", vars_to_exclude, vars_to_include, bins = NULL, tree_control = ctree_control(), verbose = FALSE){
+bin_all <- function(dframe, y, vars_to_exclude, vars_to_include, bins = NULL, tree_control = ctree_control(), verbose = FALSE){
   features_to_bin <- setdiff(names(dframe), y)
 
   if(!missing(vars_to_exclude)){

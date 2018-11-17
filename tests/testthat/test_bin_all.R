@@ -9,7 +9,7 @@ test_that("bin_all creates binned_objects for corresponding feature data type", 
   example_data <- german_credit_data %>%
     select(ca_status, age, property, gb12)
 
-  binned_objects <- bin_all(example_data)
+  binned_objects <- bin_all(example_data, "gb12")
   binned_object_classes <- binned_objects %>%
     purrr::map_chr(~ class(.x)[1]) %>%
     setNames(NULL)
@@ -24,7 +24,7 @@ test_that("variables can be excluded from the binning process", {
     bin_factor = function(dframe, xvar, y, supervised, tree_control) "factor binning",
     bin_numeric = function(dframe, xvar, y, tree_control, bins) "numeric binning",
     {
-      binned_objects <- bin_all(data_for_binning, vars_to_exclude = c("b", "c"))
+      binned_objects <- bin_all(data_for_binning, "gb12", ,vars_to_exclude = c("b", "c"))
       expect_equal(names(binned_objects), "a")
     }
   )
@@ -35,7 +35,7 @@ test_that("user can specify that only certain variables are binned", {
     bin_factor = function(dframe, xvar, y, supervised, tree_control) "factor binning",
     bin_numeric = function(dframe, xvar, y, tree_control, bins) "numeric binning",
     {
-      binned_objects <- bin_all(data_for_binning, vars_to_include = c("b", "c"))
+      binned_objects <- bin_all(data_for_binning, "gb12", vars_to_include = c("b", "c"))
       expect_equal(names(binned_objects), c("b", "c"))
     }
   )
@@ -66,7 +66,7 @@ test_that("the tree_control argument is passed to the atomic binning functions",
     },
     {
   
-      binned_objects <- bin_all(data_for_binning, tree_control = control_val)
+      binned_objects <- bin_all(data_for_binning, "gb12", tree_control = control_val)
       expect_equal(binned_objects, expected_output)
     }
   )
@@ -85,7 +85,7 @@ test_that("bin_all passes the bins function to bin_numeric", {
       bins
     },
     {
-      binned_objects <- bin_all(data_for_binning, bins = n_bins)
+      binned_objects <- bin_all(data_for_binning, "gb12", bins = n_bins)
       expect_equal(binned_objects$a, n_bins)
     }
   )
@@ -105,7 +105,7 @@ test_that("if number of bins is specified in bin_all then categorical binning
       supervised
     },
     {
-      binned_objects <- bin_all(data_for_binning, bins = n_bins)
+      binned_objects <- bin_all(data_for_binning, "gb12", bins = n_bins)
       categorical_binning_was_supervised <- binned_objects$a
       expect_false(categorical_binning_was_supervised)
     }
@@ -124,7 +124,7 @@ test_that("if number of bins is specified in bin_all then categorical binning
       supervised
     },
     {
-      binned_objects <- bin_all(data_for_binning)
+      binned_objects <- bin_all(data_for_binning, "gb12")
       categorical_binning_was_supervised <- binned_objects$a
       expect_true(categorical_binning_was_supervised)
     }
@@ -144,7 +144,7 @@ test_that("bin_all prints which variables are being binned if verbose = TRUE", {
   with_mock(
     bin_numeric = function(dframe, xvar, y, tree_control, bins) "numeric binning",
     {
-      expect_output(bin_all(data_for_binning, verbose = TRUE), regexp = expected_message)
+      expect_output(bin_all(data_for_binning, "gb12", verbose = TRUE), regexp = expected_message)
     }
   )
 })

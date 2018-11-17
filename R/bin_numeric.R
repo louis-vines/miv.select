@@ -7,7 +7,7 @@
 #' @importFrom purrr map
 #' @importFrom purrr discard
 #' @importFrom purrr flatten_dbl
-bin_numeric <- function(dframe, x, y = "gb12",
+bin_numeric <- function(dframe, x, y,
                         tree_control = ctree_control(), bins = NULL){
   FEATURE_TYPE <- 'numeric'
 
@@ -112,7 +112,7 @@ plot.binned_numeric <- function(binned_feature, old_frame, y = 'gb12'){
                        nrow = 2)
 }
 
-create_numeric_supervised_bins <- function(dframe, x, y = "gb12", tree_control = ctree_control()){
+create_numeric_supervised_bins <- function(dframe, x, y, tree_control = ctree_control()){
   x_sym <- as.symbol(x)
   y_sym <- as.symbol(y)
 

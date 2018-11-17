@@ -1,6 +1,6 @@
-binned_feature <- bin_factor(german_credit_data, x = "property")
+binned_feature <- bin_factor(german_credit_data, x = "property", y = "gb12")
 
-supervised_ordered_binned_feature <- bin_factor(german_credit_data, x = "present_employment_since", supervised = TRUE)
+supervised_ordered_binned_feature <- bin_factor(german_credit_data, x = "present_employment_since", y = "gb12", supervised = TRUE)
 
 test_that("bin_factor creates an object of class binned_categorical", {
   expect_is(binned_feature, "binned_factor")
@@ -28,14 +28,14 @@ test_that("if the feature that was binned is an ordered factor,
                                               levels = employment_status_levels,
                                               ordered = TRUE))
 
-  ordered_binned_feature <- bin_factor(german_data_w_ordered_col, x = "present_employment_since")
+  ordered_binned_feature <- bin_factor(german_data_w_ordered_col, x = "present_employment_since", y = "gb12")
 
   expect_equal(sort(ordered_binned_feature$iv_table$group), ordered_binned_feature$iv_table$group)
 })
 
 test_that("if supervised binning is requested then a supervised binning algorithm is used
            to group the factor levels", {
-  supervised_binned_feature <- bin_factor(german_credit_data, x = "property", supervised = TRUE)
+  supervised_binned_feature <- bin_factor(german_credit_data, x = "property", y = "gb12", supervised = TRUE)
 
   expected_names <- c("feature", "feature_type", "levels", "node_groups", "tree", "iv", "iv_table")
 
@@ -44,11 +44,12 @@ test_that("if supervised binning is requested then a supervised binning algorith
 })
 
 test_that("tree_control can be used to pass parameters to ctree algorithm used for binning", {
-  binned_feature <- bin_factor(german_credit_data, x = "property", supervised = TRUE)
+  binned_feature <- bin_factor(german_credit_data, x = "property", y = "gb12", supervised = TRUE)
 
   bin_with_small_tree <- bin_factor(
     german_credit_data,
     x = "property",
+    y = "gb12",
     supervised = TRUE,
     tree_control = ctree_control(maxdepth = 1)
   )
@@ -64,7 +65,7 @@ describe("predict.binned_factor()", {
   mutate(property = property %>% replace(. == "car or other", "xcar or other"))
 
   describe("when non-supervised binning is used to create the binned factor", {
-    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin)
+    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, y = "gb12") 
 
     it("reorders the factor levels to have the largest category first", {
       data_with_binned_feature <- predict(binned_feature, german_credit_data)
@@ -75,7 +76,7 @@ describe("predict.binned_factor()", {
   })
 
   describe("when supervised binning was used to create the binned_factor", {    
-    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
+    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, y = "gb12", supervised = TRUE)
 
     it("applies the categorical groupings to the relevant column with the largest category as the first group", {
       data_with_binned_feature <- predict(binned_feature, german_credit_data)
@@ -86,7 +87,7 @@ describe("predict.binned_factor()", {
   })
 
   describe("largest_level_first is false", {
-    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin)
+    binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, y = "gb12") 
     data_with_binned_feature <- predict(binned_feature, german_credit_data, largest_level_first = FALSE)
 
     it("does not reorder the factor levels to have the largest first", {
@@ -100,7 +101,7 @@ describe("predict.binned_factor()", {
 test_that("binned_factor objects have a predict method, if supervised binning was used for the binning
            process the category groupings is applied to the relevant column", {
   feature_to_bin <- "property"
-  binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
+  binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, y = "gb12", supervised = TRUE)
 
   data_with_binned_feature <- predict(binned_feature, german_credit_data)
   binned_levels <- binned_feature$levels
@@ -111,7 +112,7 @@ test_that("binned_factor objects have a predict method, if supervised binning wa
 
 test_that("the binned_factor predict method works with features other than property", {
   feature_to_bin <- "ca_status"
-  binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, supervised = TRUE)
+  binned_feature <- bin_factor(german_credit_data, x = feature_to_bin, y = "gb12", supervised = TRUE)
 
   data_with_binned_feature <- predict(binned_feature, german_credit_data)
   binned_levels <- binned_feature$levels
@@ -120,7 +121,7 @@ test_that("the binned_factor predict method works with features other than prope
 })
 
 test_that("binned_factor objects have a plot method that creates a graph with 3 elements", {
-  binned_feature <- bin_factor(german_credit_data, x = "property")
+  binned_feature <- bin_factor(german_credit_data, x = "property", y = "gb12")
   binned_feature_plot <- plot(binned_feature)
 
   expect_equal(length(binned_feature_plot$layers), 3)
@@ -128,7 +129,7 @@ test_that("binned_factor objects have a plot method that creates a graph with 3 
 })
 
 test_that("if the original data set is also passed to the plot method the plot has 4 elements", {
-  binned_feature <- bin_factor(german_credit_data, x = "property")
+  binned_feature <- bin_factor(german_credit_data, x = "property", y = "gb12")
   binned_feature_plot <- plot(binned_feature, german_credit_data)
 
   expect_equal(length(binned_feature_plot$layers), 4)
