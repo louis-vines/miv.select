@@ -1,5 +1,5 @@
 #' @importFrom partykit ctree_control
-bin_factor <- function(dframe, x, y = "gb12", supervised = FALSE, tree_control = ctree_control()){
+bin_factor <- function(dframe, x, y, supervised = FALSE, tree_control = ctree_control()){
   feature_is_ordered <- "ordered" %in% class(dframe[[x]])
 
   feature_type <- if(feature_is_ordered) "ordered_factor" else "factor"

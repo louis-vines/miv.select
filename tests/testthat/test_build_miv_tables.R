@@ -41,7 +41,7 @@ test_that("given a dataframe with a column called group containing a categorical
            a response variable entitled gb12 and a column entitled pd containing
            pds from a previous model description, build_miv_tables will calculate
            partial miv values", {
-  miv_tables <- build_miv_tables(grouped_ca_status)
+  miv_tables <- build_miv_tables(grouped_ca_status, y = "gb12")
 
   expect_equal(names(miv_tables), c("actual_woe", "expected_woe", "miv_table"))
   expect_equal(miv_tables$actual_woe, actual_woe_table_expected)
@@ -54,7 +54,7 @@ test_that("if some data is missing from the group feature, build_miv_tables crea
   grouped_ca_status$group[1:100] <- NA
 
 
-  miv_tables <- build_miv_tables(grouped_ca_status)
+  miv_tables <- build_miv_tables(grouped_ca_status, y = "gb12")
   expected_table_categories <- c("No Acc.", "(;0DM)", "<0DM;200DM)", "<200DM;)", "(Missing)") %>%
     factor(., levels = .)
 

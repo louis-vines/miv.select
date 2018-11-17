@@ -1,4 +1,4 @@
-build_iv_table <- function(dframe, y = "gb12"){
+build_iv_table <- function(dframe, y){
   y_sym = as.symbol(y)
 
   total_goods <- sum(dframe[[y]] == 0)

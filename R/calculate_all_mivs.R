@@ -1,7 +1,7 @@
 #' @importFrom purrr map_dbl
 #'
 #' @export
-calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd", vars_to_exclude,
+calculate_all_mivs <- function(dframe, y, pd = "pd", vars_to_exclude,
                                vars_to_include, as_dframe = TRUE){
   features_to_bin <- setdiff(names(dframe), c(y, pd))
 
@@ -26,7 +26,7 @@ calculate_all_mivs <- function(dframe, y = "gb12", pd = "pd", vars_to_exclude,
   arrange(desc(miv))
 }
 
-calculate_miv <- function(dframe, binned_x, y = "gb12", pd = "pd"){
+calculate_miv <- function(dframe, binned_x, y, pd = "pd"){
   feature_is_categorical <- dframe[[binned_x]] %>% {is.character(.) | is.factor(.)}
 
   if(!feature_is_categorical){

@@ -1,4 +1,4 @@
-binned_feature <- bin_numeric(german_credit_data, x = "credit_amount")
+binned_feature <- bin_numeric(german_credit_data, x = "credit_amount", y = "gb12")
 
 test_that("bin_numeric creates an object of class binned_numeric", {
   expect_is(binned_feature, "binned_numeric")
@@ -23,7 +23,7 @@ test_that("bin_numeric can accept different names for y variable", {
 test_that("if no significant splits are found, this is reported", {
   x <- "existing_credits"
 
-  binned_feature <- bin_numeric(german_credit_data, x = x)
+  binned_feature <- bin_numeric(german_credit_data, x = x, y = "gb12")
   expected_output <- list(
     feature = x,
     feature_type = "numeric",
@@ -34,11 +34,12 @@ test_that("if no significant splits are found, this is reported", {
 })
 
 test_that("tree_control can be used to pass parameters to ctree algorithm used for binning", {
-  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount")
+  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount", y = "gb12")
 
   bin_with_small_tree <- create_numeric_supervised_bins(
     german_credit_data,
     x = "credit_amount",
+    y = "gb12",
     tree_control = ctree_control(maxdepth = 1)
   )
 
@@ -50,7 +51,7 @@ test_that("if a bins argument is provided, bin_numeric creates specified number 
   #example 1
   n_bins <- 5
 
-  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount", bins = n_bins)
+  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount", y = "gb12", bins = n_bins)
   binned_iv_table <- binned_feature$iv_table
   bins_are_all_roughly_equal_check <- all(
     round(binned_iv_table$freq / 1000, 2) == ((sum(binned_iv_table$freq) / n_bins) / 1000)
@@ -62,7 +63,7 @@ test_that("if a bins argument is provided, bin_numeric creates specified number 
   #example 2
   n_bins <- 10
 
-  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount", bins = n_bins)
+  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount", y = "gb12", bins = n_bins)
 
   expect_equal(length(binned_feature$levels), n_bins)
 })
@@ -70,7 +71,7 @@ test_that("if a bins argument is provided, bin_numeric creates specified number 
 test_that("if there are less unique values than bins requested, create_numeric_frequency_bins
            uses the unique values as cutpoints", {
   #the feature being binned takes four unique values
-  binned_feature <- bin_numeric(german_credit_data, x = "installment_rate_income", bins = 5)
+  binned_feature <- bin_numeric(german_credit_data, x = "installment_rate_income", y = "gb12", bins = 5)
   binned_groups <- binned_feature$iv_table$group
   expected_groups <- c("(,1]", "(1,2]", "(2,3]", "(3,]") %>% {factor(., levels = .)}
 
@@ -86,7 +87,7 @@ test_that("if bins is not an integer >= 2 an error is raised", {
 
 describe("predict.binned_numeric()", {
   feature_to_bin <- "duration"
-  binned_feature <- bin_numeric(german_credit_data, x = feature_to_bin)
+  binned_feature <- bin_numeric(german_credit_data, x = feature_to_bin, y = "gb12")
 
   it("bins the relevant features with the largest category in the factor as the first level", {
     df_with_binned_feature <- predict(binned_feature, german_credit_data)
@@ -108,7 +109,7 @@ describe("predict.binned_numeric()", {
 })
 
 test_that("binned_numeric objects has a plot method that creates a graph with 3 elements", {
-  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount")
+  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount",  y = "gb12")
   binned_feature_plot <- plot(binned_feature)
 
   expect_equal(length(binned_feature_plot$layers), 3)
@@ -116,7 +117,7 @@ test_that("binned_numeric objects has a plot method that creates a graph with 3 
 })
 
 test_that("if the original data set is also passed to the plot method the plot has 4 elements", {
-  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount")
+  binned_feature <- bin_numeric(german_credit_data, x = "credit_amount",  y = "gb12")
   binned_feature_plot <- plot(binned_feature, german_credit_data)
 
   expect_equal(length(binned_feature_plot$layers), 4)

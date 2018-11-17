@@ -10,7 +10,7 @@ credit_data_w_pd <- credit_data_small %>%
 test_that("given a data frame with a response variable named gb12
            and pd predictions from a previous model,
            calculate_all_mivs calculates the marginal iv for all variables", {
-  miv_output <- calculate_all_mivs(credit_data_w_pd)
+  miv_output <- calculate_all_mivs(credit_data_w_pd, y = "gb12")
 
   expected_output <- data_frame(
     feature_name = c("credit_history", "purpose", "ca_status"),
@@ -26,7 +26,7 @@ test_that("the feature data types can be factor or character", {
   #so we need to test a factor variable
   credit_data_w_pd$purpose <- factor(credit_data_w_pd$purpose)
 
-  expect_error(calculate_all_mivs(credit_data_w_pd), NA)
+  expect_error(calculate_all_mivs(credit_data_w_pd, y = "gb12"), NA)
 })
 
 test_that("if numeric variables are included an error is thrown", {
@@ -35,14 +35,14 @@ test_that("if numeric variables are included an error is thrown", {
   credit_data_w_pd <- bind_rows(credit_data_w_pd, numeric_col)
 
   expect_error(
-    calculate_all_mivs(credit_data_w_pd),
+    calculate_all_mivs(credit_data_w_pd, y = "gb12"),
     "cannot calculate miv for a non-categorical variable"
   )
 })
 
 test_that("if as_dframe = FALSE a detailed output of the miv calculations
            is presented in list form", {
-  miv_output <- calculate_all_mivs(credit_data_w_pd, as_dframe = FALSE)
+  miv_output <- calculate_all_mivs(credit_data_w_pd, y = "gb12", as_dframe = FALSE)
   expected_output_names <- c("actual_woe", "expected_woe",
                              "miv_table", "iv", "miv")
 
@@ -52,15 +52,14 @@ test_that("if as_dframe = FALSE a detailed output of the miv calculations
 })
 
 test_that("user can specify which variables are excluded in the calculation", {
-  miv_output <- calculate_all_mivs(credit_data_w_pd, vars_to_exclude = "purpose")
+  miv_output <- calculate_all_mivs(credit_data_w_pd, y = "gb12", vars_to_exclude = "purpose")
   expected_features_included <- c("credit_history", "ca_status")
 
   expect_equal(miv_output$feature_name, expected_features_included)
 })
 
 test_that("user can specify which variables are included in the calculation", {
-  miv_output <- calculate_all_mivs(credit_data_w_pd,
-                                   vars_to_include = c("ca_status", "purpose"))
+  miv_output <- calculate_all_mivs(credit_data_w_pd, y = "gb12", vars_to_include = c("ca_status", "purpose"))
 
   expected_features_included <- c("purpose", "ca_status")
 

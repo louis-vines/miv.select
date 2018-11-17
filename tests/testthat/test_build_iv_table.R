@@ -12,7 +12,7 @@ grouped_ca_status <- readr::read_csv(
 test_that("given a dataframe with a column called group containing a categorical variable
            and a column column entitled gb12 response, build_iv_table will costruct
            a table calculating information values", {
-  iv_table <- build_iv_table(grouped_ca_status)
+  iv_table <- build_iv_table(grouped_ca_status, y = "gb12")
   expected_iv_table <- tibble::tribble(
            ~group, ~freq, ~freq_bad, ~freq_good, ~prop_total, ~bad_rate,   ~odds, ~log_odds,     ~woe,     ~iv,
         "No Acc.",   394,        46,        348,       0.394,   0.11675, 0.13218,  -2.02356, -1.17626, 0.40441,
@@ -29,7 +29,7 @@ test_that("if some data is missing from the group feature, this is reported as a
            which is the bottom row of the data", {
   grouped_ca_status$group[1:100] <- NA
 
-  iv_table <- build_iv_table(grouped_ca_status)
+  iv_table <- build_iv_table(grouped_ca_status, y = "gb12")
   expected_iv_table <- data_frame(
     group = c("No Acc.", "(;0DM)", "<0DM;200DM)", "<200DM;)", "(Missing)"),
     iv = c(0.35346, 0.20804, 0.04803, 0.00726, 0.00598)
