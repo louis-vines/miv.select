@@ -60,7 +60,7 @@ print.binned_features <- function(binned_features, ...){
   do.call(tibble:::print.tbl_df, all_args_for_call)
 }
 
-plot.binned_features <- function(binned_features, train_data){
+plot.binned_features <- function(binned_features, train_data, y){
   iv_summary <- attr(binned_features, "iv_summary")
 
   for (feature in iv_summary$feature) {
@@ -73,10 +73,23 @@ plot.binned_features <- function(binned_features, train_data){
     }
 
     cat("iv: ", iv , "\n")
-    print(plot(binned_features[[feature]], train_data))
+    print(plot(binned_features[[feature]], train_data, y))
     input_val <- readline("Input q to quit or hit Enter to continue:")
     if (str_to_lower(input_val) == 'q') {
       break()
     }
   }
+}
+
+predict.binned_features <- function(binned_features, train_data, y, iv_cutoff){
+  iv_summary <- attr(binned_features, 'iv_summary') %>% filter(!is.na(iv))
+
+  if(!missing(iv_cutoff)){
+    iv_summary <- iv_summary %>% filter(iv > iv_cutoff)
+  }
+  
+  features_to_keep <- iv_summary$feature
+
+  reduce(binned_features, ~ predict(.y, .x), .init = train) %>%
+    select(!!!quos(features_to_keep), !!as.symbol(y))
 }

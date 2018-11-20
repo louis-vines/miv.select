@@ -118,7 +118,7 @@ test_that("binned_numeric objects has a plot method that creates a graph with 3 
 
 test_that("if the original data set is also passed to the plot method the plot has 4 elements", {
   binned_feature <- bin_numeric(german_credit_data, x = "credit_amount",  y = "gb12")
-  binned_feature_plot <- plot(binned_feature, german_credit_data)
+  binned_feature_plot <- plot(binned_feature, german_credit_data, "gb12")
 
   expect_equal(length(binned_feature_plot$layers), 4)
   purrr::walk(binned_feature_plot$layers, ~ expect_is(.x, "ggproto"))
