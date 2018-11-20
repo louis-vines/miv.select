@@ -4,8 +4,7 @@
 \alias{bin_numeric}
 \title{Numeric Factor Binning}
 \usage{
-bin_numeric(dframe, x, y = "gb12", tree_control = ctree_control(),
-  bins = NULL)
+bin_numeric(dframe, x, y, tree_control = ctree_control(), bins = NULL)
 }
 \description{
 Numeric Factor Binning

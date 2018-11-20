@@ -70,7 +70,7 @@ predict.binned_numeric <- function(binned_feature, dframe, largest_level_first =
 
 #' @export
 
-plot.binned_numeric <- function(binned_feature, old_frame, y = 'gb12'){
+plot.binned_numeric <- function(binned_feature, old_frame, y, xmin=-Inf, xmax=Inf){
   woe_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, woe)) +
     geom_bar(stat = 'identity') +
@@ -96,9 +96,11 @@ plot.binned_numeric <- function(binned_feature, old_frame, y = 'gb12'){
   }
 
   old_frame[[y]] <- factor(old_frame[[y]])
+  feature_name <- as.symbol(binned_feature$feature)
 
   distribution_plot <- old_frame %>%
-    ggplot(aes_string(binned_feature$feature, colour = y, fill = y)) +
+    filter((!!feature_name) >= xmin, (!!feature_name) <= xmax) %>%
+    ggplot(aes_string(feature_name, colour = y, fill = y)) +
     geom_density(alpha = 0.3) +
     ggtitle('Distribution') +
     scale_colour_discrete(labels = c('good', 'bad')) +

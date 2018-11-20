@@ -114,7 +114,7 @@ reorder_factor_with_largest_group_first <- function(dframe, binned_feature){
     mutate(!!feature_sym := forcats::fct_relevel(!!feature_sym, largest_factor_level))  
 }
 
-plot.binned_factor <- function(binned_feature, old_frame, y = 'gb12'){
+plot.binned_factor <- function(binned_feature, old_frame, y){
   woe_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, woe)) +
     geom_bar(stat = 'identity') +
