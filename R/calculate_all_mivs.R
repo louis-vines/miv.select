@@ -1,9 +1,10 @@
 #' @importFrom purrr map_dbl
 #'
 #' @export
-calculate_all_mivs <- function(dframe, y, pd = "pd", vars_to_exclude,
+calculate_all_mivs <- function(dframe, y, predictions, vars_to_exclude,
                                vars_to_include, as_dframe = TRUE){
-  features_to_bin <- setdiff(names(dframe), c(y, pd))
+  predictions <- as.vector(predictions)
+  features_to_bin <- setdiff(names(dframe), y)
 
   if(!missing(vars_to_exclude)){
     features_to_bin <- setdiff(features_to_bin, vars_to_exclude)
@@ -13,7 +14,7 @@ calculate_all_mivs <- function(dframe, y, pd = "pd", vars_to_exclude,
     features_to_bin <- intersect(features_to_bin, vars_to_include)
   }
 
-  mivs <- map(features_to_bin, function(name) calculate_miv(dframe, name, y, pd)) %>%
+  mivs <- map(features_to_bin, function(feature) calculate_miv(dframe, feature, y, predictions)) %>%
     setNames(features_to_bin)
 
   if(!as_dframe){
@@ -26,7 +27,7 @@ calculate_all_mivs <- function(dframe, y, pd = "pd", vars_to_exclude,
   arrange(desc(miv))
 }
 
-calculate_miv <- function(dframe, binned_x, y, pd = "pd"){
+calculate_miv <- function(dframe, binned_x, y, predictions){
   feature_is_categorical <- dframe[[binned_x]] %>% {is.character(.) | is.factor(.)}
 
   if(!feature_is_categorical){
@@ -35,7 +36,7 @@ calculate_miv <- function(dframe, binned_x, y, pd = "pd"){
 
   miv_tables <- dframe %>%
     rename_(group = binned_x) %>%
-    build_miv_tables(y, pd)
+    build_miv_tables(y, predictions)
 
   c(miv_tables, iv = sum(miv_tables$miv_table$iv), miv = sum(miv_tables$miv_table$miv))
 }

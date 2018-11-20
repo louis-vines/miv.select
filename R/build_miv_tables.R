@@ -1,5 +1,5 @@
-build_miv_tables <- function(dframe, y, pd = "pd"){
-  pd_sym = as.symbol(pd)
+build_miv_tables <- function(dframe, y, predictions){
+  dframe$.predictions. <- predictions
 
   total_goods <- sum(dframe[[y]] == 0)
   total_bads <- sum(dframe[[y]] == 1)
@@ -11,8 +11,8 @@ build_miv_tables <- function(dframe, y, pd = "pd"){
   expected_woe <- dframe %>%
     group_by(group) %>%
     summarise(freq = n(),
-              freq_bad = sum(!!pd_sym),
-              freq_good = sum(1 - (!!pd_sym))) %>%
+              freq_bad = sum(.predictions.),
+              freq_good = sum(1 - (.predictions.))) %>%
     mutate(prop_total = freq / sum(freq),
            bad_rate = freq_bad / freq,
            odds = freq_bad / freq_good,

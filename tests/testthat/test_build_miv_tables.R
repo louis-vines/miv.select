@@ -9,6 +9,11 @@ grouped_ca_status <- readr::read_csv(
   mutate(ca_status = factor(ca_status, ordered = TRUE)) %>%
   rename(group = ca_status)
 
+# we've stored the fixture with the predictions included for ease
+# they need to be removed from the df and passed in to the miv_function as their own dataframe
+predictions <- grouped_ca_status$pd
+grouped_ca_status <- grouped_ca_status %>% select(-pd)
+
 
 actual_woe_table_expected <- tibble::tribble(
          ~group, ~freq, ~freq_bad, ~freq_good, ~prop_total, ~bad_rate,   ~odds, ~log_odds,     ~woe,
@@ -41,7 +46,7 @@ test_that("given a dataframe with a column called group containing a categorical
            a response variable entitled gb12 and a column entitled pd containing
            pds from a previous model description, build_miv_tables will calculate
            partial miv values", {
-  miv_tables <- build_miv_tables(grouped_ca_status, y = "gb12")
+  miv_tables <- build_miv_tables(grouped_ca_status, y = "gb12", predictions)
 
   expect_equal(names(miv_tables), c("actual_woe", "expected_woe", "miv_table"))
   expect_equal(miv_tables$actual_woe, actual_woe_table_expected)
@@ -54,7 +59,7 @@ test_that("if some data is missing from the group feature, build_miv_tables crea
   grouped_ca_status$group[1:100] <- NA
 
 
-  miv_tables <- build_miv_tables(grouped_ca_status, y = "gb12")
+  miv_tables <- build_miv_tables(grouped_ca_status, y = "gb12", predictions)
   expected_table_categories <- c("No Acc.", "(;0DM)", "<0DM;200DM)", "<200DM;)", "(Missing)") %>%
     factor(., levels = .)
 
@@ -63,10 +68,10 @@ test_that("if some data is missing from the group feature, build_miv_tables crea
   expect_equal(miv_tables$miv_table$group, expected_table_categories)
 })
 
-test_that("build_miv_tables can accept different names for the response variable and pd column", {
-  grouped_ca_status <- grouped_ca_status %>% rename(y = gb12, predicted_bad = pd)
+test_that("build_miv_tables can accept different names for the response column", {
+  grouped_ca_status <- grouped_ca_status %>% rename(y = gb12)
 
-  miv_tables <- build_miv_tables(grouped_ca_status, y = "y", pd = "predicted_bad")
+  miv_tables <- build_miv_tables(grouped_ca_status, y = "y", predictions)
 
   expect_equal(miv_tables$actual_woe, actual_woe_table_expected)
   expect_equal(miv_tables$expected_woe, expected_woe_table_expected)
