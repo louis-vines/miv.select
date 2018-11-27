@@ -119,17 +119,20 @@ plot.binned_factor <- function(binned_feature, old_frame, y){
     ggplot(aes(group, woe)) +
     geom_bar(stat = 'identity') +
     geom_hline(yintercept = 0, alpha = 0.5) +
-    ggtitle('Weight of Evidence')
+    ggtitle('Weight of Evidence') +
+    theme(axis.text.x = element_text(rotation=90))
 
   bad_rate_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, bad_rate)) +
     geom_bar(stat = 'identity') +
-    ggtitle('Bad Rate')
+    ggtitle('Bad Rate') +
+    theme(axis.text.x = element_text(rotation=90))
 
   freq_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, freq)) +
     geom_bar(stat = 'identity') +
-    ggtitle('Frequency')
+    ggtitle('Frequency') +
+    theme(axis.text.x = element_text(rotation=90))
 
   if(missing(old_frame)){
     return(

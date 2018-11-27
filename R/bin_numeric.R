@@ -74,17 +74,23 @@ plot.binned_numeric <- function(binned_feature, old_frame, y, xmin=-Inf, xmax=In
   woe_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, woe)) +
     geom_bar(stat = 'identity') +
-    ggtitle('Weight of Evidence')
+    ggtitle('Weight of Evidence') +
+    theme(axis.text.x = element_text(angle = 90, hjust=0.95, vjust=0.5)) +
+    xlab("")
 
   bad_rate_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, bad_rate)) +
     geom_bar(stat = 'identity') +
-    ggtitle('Bad Rate')
+    ggtitle('Bad Rate') +
+    theme(axis.text.x = element_text(angle = 90, hjust=0.95, vjust=0.5)) +
+    xlab("")
 
   freq_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, freq)) +
     geom_bar(stat = 'identity') +
-    ggtitle('Frequency')
+    ggtitle('Frequency') +
+    theme(axis.text.x = element_text(angle = 90, hjust=0.95, vjust=0.5)) +
+    xlab("")
 
   if(missing(old_frame)){
     return(
