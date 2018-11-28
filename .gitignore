@@ -23,10 +23,8 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
-
 spikes/
 tmp/
-
 tests/testthat/Rplots.pdf
-
 .Rproj.user
+inst/doc

@@ -1,4 +1,5 @@
 #' @importFrom stringr str_replace
+#' @export
 cut_vector <- function(x, breaks, closed_on_right = TRUE){
   breaks <- unique(c(-Inf, breaks, Inf))
   x_cut <- cut(x, breaks, right = closed_on_right)
