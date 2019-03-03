@@ -1,3 +1,4 @@
+#' @export
 remove_x_axis <- function(){
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -5,6 +6,7 @@ remove_x_axis <- function(){
         axis.line.x = element_blank())
 }
 
+#' @export
 gg_value_labels <- function(dframe, input_var_name, format_fn=identity, ...){
   input_var <- as.symbol(input_var_name)
   input_values <- dframe[[input_var_name]]

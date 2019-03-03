@@ -1,0 +1,381 @@
+---
+title: "Select variables for logistic regression models using MIV"
+author: "Louis Vines"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This package is an extension of using information values to discover useful candidate features when fitting binary classification models. The extra functionality provided by this package is the concept of **Marginal Information Values** which can be used to find the next useful feature to enter an already partially selected regression model. This functionality could be extended in the future to provide a fully automated feature selection algorithm although in many cases where one is faced with hundreds of features to thousands of features and wants to fit a regression model with a small number of features (say ~ ten features), a typical example being fitting credit models, the approach outlined in this vignette can prove to be very powerful.
+
+For a full introduction for using information values for exploring the power of single variables please check out the excellently documented `Information` package (https://cran.r-project.org/web/packages/Information/vignettes/Information-vignette.html).
+
+
+## Explanation of MIV
+The `Information` package has an excellent description of WOE / information values, but I will recap. Firstly, when we are fitting a logistic regression model, we are trying to estimate the log odds of our output variable based on a regression on a set of input features. We can derive a relationship between our log odds and the WOE as so:
+
+$$
+log \frac{P(Y=1|X_j)}{P(Y=0|X_j)} = \underbrace{\log \frac{P(Y=1)}{P(Y=0)}}_{\text{sample log-odds}} + \underbrace{\log \frac{f(X_j | Y=1)}{f(X_j | Y=0)}}_{\text{WOE}_j}
+$$
+Thus we can think of the WOE as identifying parts of our input feature space where the evidence in favour of $Y = 1$ is greater than the sample average when the WOE is positive and likewise we can identify parts of the our feature space where the evidence of $Y = 0$ is greater than the sample average when WOE is less than 0.
+
+We can take this a step further and derive the information value, which can be used to score the predictive power of each of our features. We derive the information value of a feature $j$ as :
+
+$$
+\text{IV}_j = \int \log \frac{f(X_j | Y=1)}{f(X_j | Y=0)} \, (f(X_j | Y=1) - f(X_j | Y=0)) \, dx. \nonumber
+$$
+If we also note that
+
+$$
+f(X_j | Y=1) = \frac{P(X_j, Y=1)}{P(Y=1)}
+$$
+we can see that $f(X_j | Y=1)$ can be thought of as the proportion of positive outcomes in a region of $X_j$ as a fraction of the total positive outcomes that our data.
+
+So essentially, when calculating the IV, we are taking a weighted mean across a feature of the WOE - how much does the evidence stack in favour of a positive or negative outcome in parts of the feature space - multiplied the difference between the proportion of positive outcomes, in that part of the feature space, as a fraction of all positive outcomes and the proportion of negative outcomes as a fraction of all negative outcomes.
+
+This gives us a way of quantifying whether not only a variable has parts of its range where there is a strong WOE, i.e. a noteable divergence from the sample log-odds, but also if this occurs in a part of the range where there is a meaningful number of positive or negative outcomes in comparison to the total sample, thus avoiding rewarding small pockets of the feature space.
+
+This IV value can be used to give a single score to each potential variable when fitting a binary classifier on its predictive potential.
+
+### Estimating WOE
+The most common approach to estimating the conditional densities needed to calculate WOE is to bin \\(X_j \\) and then use a histogram-type estimate.
+ 
+We create a \\( k \\) by \\(2\\) table where \\(k \\) is the number of bins, and the cells within the two columns count the number of records where \\(Y=1\\) and \\(Y=0\\), respectively. The bins are typically selected such that the bins are roughly evenly sized with respect to the number of records in each bin (if possible). The conditional densities are then obtained by calculating the “column percentages” from this table. The typical number of bins used is 10-20. If \\(X_j\\) is categorical, no binning is needed and the histogram estimator can be used directly. Moreover, missing values are treated as a separate bin and thus handled seamlessly.
+
+
+If \\(B_1, \ldots, B_k \\) denote the bins for \\(X_j \\), the WOE for \\( X_j \\) for bin \\(i \\) can be written as
+
+$$ \text{WOE}_{ij} = \log \frac{P(X_j \in B_i | Y=1)}{P(X_j \in B_i | Y=0)} $$
+
+which means that the IV for variable \\( X_j \\) can be calculated as
+
+$$\text{IV}_j =  \sum_{i=1}^k (P(X_j \in B_i | Y=1) - P(X_j \in B_i | Y=0)) \times \text{WOE}_{ij}. \nonumber $$
+
+### Marginal Information Value
+
+Although IV values can be used to discover which variables have a strong singular predictive power against a binary output, this approach doesn't give any guide as to which variables would work well *together* in a model. In particular if deciding features based purely on their IV value we don't guard against introducing collinear variables into our model - it may be that we have multiple features with a strong IV value that are driven by the same underlying mechanism and as such introducing more than one of these into our regression model will offer little gain in predictive power.
+
+We can use the concept of **marginal information vaules** to remedy this problem. The intuition behind a variable's miv score is that, given we have already fit a model with some subset of available variables, the marginal information value scores the remaining variables on how much **additional** information each variable will contribute when contrasted to the predictions made with the current model.
+
+Given a candidate model $m$, we can define the MIV for each remaining variable as:
+
+$$
+\text{MIV}^m_j = \int \Delta \text{WOE}^m_j  \, (f(X_j | Y=1) - f(X_j | Y=0)) \, dx
+$$
+where:
+
+$$
+\Delta \text{WOE}^m_j = \text{WOE}_{j} - \widehat{\text{WOE}^m_j}
+$$
+that is to say $\Delta \text{WOE}^m_j$  is the difference between the actual observed $\text{WOE}$ for a given feature and the WOE estimated using the probabilites predicted by our current model.
+
+Similar to before we can approximate this by binning our features and thus $\Delta \text{WOE}^m_j$ for feature $X_j$ comparing against model $m$ for bin $i$ can be written as
+
+$$
+\Delta \text{WOE}^m_{ij} = \log \frac{P(X_j \in B_i | Y=1)}{P(X_j \in B_i | Y=0)}  \, - \,
+                    \log \frac{ \widehat{P}(X_j \in B_i | Y=1)_m} { \widehat{P}(X_j \in B_i | Y=0)_m}
+$$
+
+
+and thus our MIV for feature $X_j$ given model $m$ is:
+
+$$
+\text{IV}^m_j=\sum_{i=1}^k (P(X_j \in B_i | Y=1) - P(X_j \in B_i | Y=0)) \times\Delta WOE^m_{ij}.
+$$
+
+
+## Fitting Models Using Marginal Information Values
+We can now proceed as follows
+
+```
+1. Take the mean of our response variable as our initial model m_0
+2. Do until a stopping condition is reached*:
+  a. Calculate MIV values for features not in current model
+  b. Fit new model inlcuding the candidate feature with the highest MIV
+```
+
+*Popular stopping conditions are to continue until all MIV values are below a threshold (commonly 0.02) or until a performance metric on a hold out set stops improving.
+
+## Benefits of this technique
+
+#### Useful variables are selected even with missing values or non-linear relationships present
+
+When fitting regression models it is often necessary to perform some feature cleaning to ensure the success of fitting a linear model. e.g.
+
+* handle missing values
+* handle extreme values
+* handle non-linear relationship between feature and output
+
+This can be a slight catch 22 -- if you are faced with several hundred candidate features it is unlikely you can / want to perform cleaning on each of the variables. However if you were using a standard variable selection approach it may be that certain variables would only exhibit their use after some degree of pre-processing. Because MIV values are approximated using a binned version of the input features, the problems described above do not hinder the method suggesting what features will most improve a model in development. When a useful feature has been identified, some time can then be invested in engineering the feature to be improve predictive performance.
+
+#### Method avoids introducing collinear variables
+
+Secondly, when calculating MIV we are searching for features that have predictive power lacking in our current model. This means we avoid introducing collinear features as once one of these features has been introduced to the model, the features shares collinearity with will experience a drop in MIV in the next round of estimation. Thus this not only prevents us from introducing collinear features but also illustrates when features suffer from collinearity as the remaining features in a candidate pool will experience a loss in MIV score when a collinear sibling has entered into the model.
+
+## Example
+
+### Package basics
+
+Import data - the data set being used comes from the information package. It's a dataset predicting whether something was purchased or not - the output column is entitled `PURCHASE`
+```{r message=FALSE, warning=FALSE}
+library(miv.select)
+library(dplyr)
+library(purrr)
+library(mgcv)
+library(rsample)
+
+ggplot2::theme_set(ggplot2::theme_minimal())
+
+data(purchase_train)
+data(purchase_test.rda)
+
+train <- purchase_train
+validation_and_testing <- purchase_test
+
+set.seed(456)
+validation_test_split <- initial_split(validation_and_testing, prop = 0.5, strata = 'PURCHASE')
+validation <- training(validation_test_split)
+test <- testing(validation_test_split)
+```
+
+Bin all features, shows a summary of the variables information values in descending order.
+```{r, warning=FALSE}
+binned_features <- bin_all(train, y = 'PURCHASE', bins=10, verbose = FALSE)
+binned_features %>% print(n=20)
+```
+The package is also designed to use s3 methods so one can inspect the distribution and predictive performance of an individual variable by using the plot method on a binned feature:
+```{r, fig.height=6, fig.width=7, fig.align="center"}
+plot(binned_features[["TOT_HI_CRDT_CRDT_LMT"]], train, y = "PURCHASE")
+```
+
+
+and finally you can bin new data using the predict method. If you use predict on the entire `binned_features` object, all binned features will be binned in the new dataset, e.g.:
+
+```{r}
+predict(binned_features, train, y = "PURCHASE") %>% select(N_OPEN_REV_ACTS, TOT_HI_CRDT_CRDT_LMT)
+```
+
+### Use package to aid with model fitting
+
+Initially we can take the feature with the highest information value and fit a model with this feature. I will use the mgcv package to fit generalised additive model as these allow for automatic handling of non-linear relationships between inputs and response.
+
+```{r}
+binned_features
+```
+
+so our most predictive feature is `N_OPEN_REV_ACTS` and as such we will use this as the first feature to enter the model.
+
+To start we can plot the binned representation of the `N_OPEN_REV_ACTS` feature to understand more about the variable.
+
+```{r, fig.height=6, fig.width=7, fig.align="center"}
+feature <- 'N_OPEN_REV_ACTS'
+binned_features[[feature]]
+plot(binned_features[[feature]], train, y = 'PURCHASE')
+```
+
+we can see that the feature has a very long with thin data in the tail of the distribution. It is well acknowldged that this can make our regression estimate unstable in this part of the feature. This is something we will watch out for while fitting the model.
+
+```{r}
+candidate_model <- gam(
+  PURCHASE ~ s(N_OPEN_REV_ACTS, bs = "ps")
+  ,
+  data = train,
+  method="REML",
+  family = "binomial"
+)
+candidate_model
+```
+To understand model fit can view the summary of the model. Also the `miv.select` package includes a method to view smoothed gam fits with rug plots:
+```{r}
+summary(candidate_model)
+```
+
+```{r, fig.height=4, fig.width=7, fig.align="center"}
+plot_gam_feature(candidate_model, feature, train)
+```
+
+We can see from the rug plot that the data becomes very thin greater than roughly 30. Also there is no justification that the chance of purchase should decrease when the value of this feature is greater than 30. This is clearly a problem with the regression model overfitting in a thin part of the parameter space. To rectify this we can cap the variable at a value that stops the regression fit decreasing again in extreme values - having experimented with this I found 25 to be a good upper limit of the feature.
+
+We proceed by creating a function to transform data in the future so that we can easily apply the same transformations to future datasets (e.g. the validation and test sets).
+
+```{r, fig.height=6, fig.width=7, fig.align="center"}
+transform_features <- function(df){
+  df %>%
+    mutate(N_OPEN_REV_ACTS = N_OPEN_REV_ACTS %>% replace(. > 25, 25))
+}
+
+train_transformed <- train %>% transform_features()
+plot(binned_features[[feature]], train_transformed, y = 'PURCHASE')
+
+```
+
+the distribution plot looks much healthier in the above plot - we no longer have a few very extreme values which could add instability to the model.
+
+```{r, fig.height=4, fig.width=7, fig.align="center"}
+candidate_model <- gam(
+  PURCHASE ~ s(N_OPEN_REV_ACTS, bs = "ps")
+  ,
+  data = train_transformed,
+  method="REML",
+  family = "binomial"
+)
+
+candidate_model
+summary(candidate_model)
+plot_gam_feature(candidate_model, feature, train_transformed)
+```
+
+This fit looks far more reliable.
+
+We can now check the performance for the current model on our validation set:
+
+```{r, fig.height=4, fig.width=4.5, fig.align="center"}
+validation_predictions <- predict(candidate_model, transform_features(validation), type='response')
+auc(validation_predictions, validation$PURCHASE)
+roc_curve(validation_predictions, validation$PURCHASE)
+```
+
+We can now make predictions with our current model and then use these to calculate the MIV values for the remaining candidate features. We need to bin all the variables to aid in calculating MIV. As mentioned above this can be done by using the predict method on the `binned_features` object.
+
+```{r, warning=FALSE}
+model_predictions <- predict(candidate_model, train_transformed, type = 'response')
+train_set_binned <- predict(binned_features, train, 'PURCHASE', 0.02)
+all_mivs <- calculate_all_mivs(train_set_binned, y = 'PURCHASE', model_predictions)
+all_mivs
+```
+
+We proceed by introducing the next most powerful variable, ranked on MIV, to the model and proceed as with the previous variable
+
+
+```{r, fig.height=6, fig.width=7, fig.align="center"}
+
+feature <- 'TOT_HI_CRDT_CRDT_LMT'
+binned_features[[feature]]
+plot(binned_features[[feature]], train_transformed, y = 'PURCHASE')
+```
+
+
+this variable suffers from the same problem as the previous - a long right tail. Again we will rectify this as we proceed.
+
+```{r, fig.height=4, fig.width=7, fig.align="center"}
+
+candidate_model <- gam(
+  PURCHASE ~ s(N_OPEN_REV_ACTS, bs = "ps") +
+             s(TOT_HI_CRDT_CRDT_LMT, bs = "ps")
+  ,
+  data = train_transformed,
+  method="REML",
+  family = "binomial"
+)
+
+candidate_model
+summary(candidate_model)
+plot_gam_feature(candidate_model, feature, train_transformed)
+
+```
+
+Through experimentation I settled on the following transformation:
+
+```{r, fig.height=6, fig.width=7, fig.align="center"}
+transform_features <- function(df){
+  df %>%
+    mutate(
+      N_OPEN_REV_ACTS = N_OPEN_REV_ACTS %>% replace(. > 25, 25),
+      TOT_HI_CRDT_CRDT_LMT = TOT_HI_CRDT_CRDT_LMT %>% replace(. > 3e5, 3e5)
+    )
+}
+
+train_transformed <- transform_features(train)
+plot(binned_features[[feature]], train_transformed, y = 'PURCHASE')
+```
+
+Let's refit the model and inspect the feature plot:
+
+```{r, fig.height=4, fig.width=7, fig.align="center"}
+candidate_model <- gam(
+  PURCHASE ~ s(N_OPEN_REV_ACTS, bs = "ps") +
+    s(TOT_HI_CRDT_CRDT_LMT, bs = "ps")
+  ,
+  data = train_transformed,
+  method="REML",
+  family = "binomial"
+)
+
+candidate_model
+summary(candidate_model)
+
+plot_gam_feature(candidate_model, feature, train_transformed)
+```
+
+This looks far more stable.
+
+We can now re-check the AUC on our validation set to see if the introduction of this new variable continued to improve our performance:
+
+```{r, fig.height=4, fig.width=4.5, fig.align="center"}
+validation_predictions <- predict(candidate_model, transform_features(validation), type='response')
+roc_curve(validation_predictions, validation$PURCHASE)
+```
+
+an improvement over the previous model so incentive to continue with the process...
+
+I continued in this way until the modelling procedure stops providing improvements in the validation set AUC at which point I stopped the process arriving with the final model:
+
+```{r}
+transform_features <- function(df){
+  df %>%
+    mutate(
+      N_OPEN_REV_ACTS = N_OPEN_REV_ACTS %>% replace(. > 25, 25),
+      TOT_HI_CRDT_CRDT_LMT = TOT_HI_CRDT_CRDT_LMT %>% replace(. > 3e5, 3e5),
+      D_NA_M_SNC_MST_RCNT_ACT_OPN = factor(D_NA_M_SNC_MST_RCNT_ACT_OPN),
+      RATIO_BAL_TO_HI_CRDT = RATIO_BAL_TO_HI_CRDT %>% replace(. > 125, 125)
+    )
+}
+
+train_transformed <- train %>% transform_features()
+
+candidate_model <- gam(
+  PURCHASE ~ s(N_OPEN_REV_ACTS, bs = "ps") +
+    s(TOT_HI_CRDT_CRDT_LMT, bs = "ps") +
+    D_NA_M_SNC_MST_RCNT_ACT_OPN +
+    s(RATIO_BAL_TO_HI_CRDT, bs = "ps") +
+    s(M_SNC_OLDST_RETAIL_ACT_OPN, bs = "ps")
+  ,
+  data = train_transformed,
+  method="REML",
+  family = "binomial"
+)
+
+```
+
+```{r}
+summary(candidate_model)
+```
+
+```{r, fig.height=4, fig.width=4.5, fig.align="center"}
+validation_predictions <- predict(candidate_model, transform_features(validation), type='response')
+auc(validation_predictions, validation$PURCHASE)
+roc_curve(validation_predictions, validation$PURCHASE)
+```
+
+From this point onwards experimenting with including further variables seemed to decrease the predictive performance on the validation set so it seems to be the correct time to stop.
+
+Finally we can refit the model on the training and validation set and test the performance on the test set to confirm that our performance generalises and we haven't inadvertantly performed some over-fitting steps.
+
+```{r, fig.height=4, fig.width=4.5, fig.align="center"}
+train_and_validation <- train %>% bind_rows(validation)
+model <- gam(
+  candidate_model$formula,
+  data = train_and_validation %>% transform_features(),
+  method="REML",
+  family = "binomial"
+)
+model
+summary(model)
+test_predictions <- predict(model, transform_features(test), type='response')
+roc_curve(test_predictions, test$PURCHASE)
+```
+
+Our performance actually improves when we fit using the training and validation - this is most likely due to the fact that the datasets we are using are quite small and as such fitting the data with 50% more data has understandably improved its performance.

@@ -52,6 +52,7 @@ extract_iv_summary <- function(binned_features){
     }
 }
 
+#' @export
 print.binned_features <- function(binned_features, ...){
   extra_args <- list(...)
   iv_summary <- attr(binned_features, "iv_summary")
@@ -60,6 +61,7 @@ print.binned_features <- function(binned_features, ...){
   do.call(tibble:::print.tbl_df, all_args_for_call)
 }
 
+#' @export
 plot.binned_features <- function(binned_features, train_data, y){
   iv_summary <- attr(binned_features, "iv_summary")
 
@@ -75,12 +77,13 @@ plot.binned_features <- function(binned_features, train_data, y){
     cat("iv: ", iv , "\n")
     print(plot(binned_features[[feature]], train_data, y))
     input_val <- readline("Input q to quit or hit Enter to continue:")
-    if (str_to_lower(input_val) == 'q') {
+    if (stringr::str_to_lower(input_val) == 'q') {
       break()
     }
   }
 }
 
+#' @export
 predict.binned_features <- function(binned_features, train_data, y, iv_cutoff){
   iv_summary <- attr(binned_features, 'iv_summary') %>% filter(!is.na(iv))
 

@@ -1,4 +1,5 @@
 #' @importFrom partykit ctree_control
+#' @export
 bin_factor <- function(dframe, x, y, supervised = FALSE, tree_control = ctree_control()){
   feature_is_ordered <- "ordered" %in% class(dframe[[x]])
 
@@ -71,6 +72,7 @@ supervised_factor_grouping <- function(dframe, x, y, tree_control){
   list(data = binned_data, node_groups = node_groups, tree = tree_obj)
 }
 
+#' @export
 predict.binned_factor <- function(binned_feature, dframe, largest_level_first = TRUE){
   feature <- binned_feature$feature
   binned_feature_was_supervised <- "tree" %in% names(binned_feature)
@@ -114,6 +116,7 @@ reorder_factor_with_largest_group_first <- function(dframe, binned_feature){
     mutate(!!feature_sym := forcats::fct_relevel(!!feature_sym, largest_factor_level))  
 }
 
+#' @export
 plot.binned_factor <- function(binned_feature, old_frame, y){
   woe_plot <- binned_feature$iv_table %>%
     ggplot(aes(group, woe)) +

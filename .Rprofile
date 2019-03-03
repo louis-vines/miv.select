@@ -9,7 +9,3 @@ if(.rprofile_exists){
 if(utils::packageVersion("testthat")$major >= 2){
   options(testthat.default_reporter = "summary")
 }
-
-if(interactive()){
-  devtools::load_all()
-}
