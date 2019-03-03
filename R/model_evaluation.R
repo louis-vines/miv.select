@@ -11,8 +11,8 @@ roc_curve <- function(predicted, observed){
   auc <- ROCR::performance(ROCR::prediction(predicted, observed),"auc")@y.values[[1]]
   fpr_vs_tpr <- ROCR::performance(ROCR::prediction(predicted, observed),"tpr","fpr")
 
-  data_frame(tpr=fpr_vs_tpr@x.values[[1]], fpr=fpr_vs_tpr@y.values[[1]]) %>%
-    ggplot(aes(tpr, fpr)) +
+  data_frame(tpr=fpr_vs_tpr@y.values[[1]], fpr=fpr_vs_tpr@x.values[[1]]) %>%
+    ggplot(aes(fpr, tpr)) +
     geom_line() +
     geom_abline(slope = 1, intercept = 0, linetype='dashed', alpha = 0.5) +
     ggtitle(stringr::str_c('AUC: ', round(auc, 4)))
