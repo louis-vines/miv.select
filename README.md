@@ -2,7 +2,7 @@
 
 This package builds methods to aid with binary classification through logistic regression based methods (including GLMNet and GAMS), particularly focused on applications in credit scoring. It provides methods for supervised and unsupervised binning, single factor screening using information values and an aid for variable selection via marginal information values. There is scope to develop a fully automated algorithm for variable selection but this hasn't been added yet.
 
-Here is a link to the vignette describing the functionality of the package: https://htmlpreview.github.io/?https://github.com/louis-vines/miv.select/blob/master/vignettes/using-miv-to-select-variables-in-regression.html
+Clike [here](https://htmlpreview.github.io/?https://github.com/louis-vines/miv.select/blob/master/vignettes/using-miv-to-select-variables-in-regression.html) to view the vignette describing the functionality of the package.
 
 ## Development
 
