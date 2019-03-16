@@ -26,5 +26,5 @@ Run only a specific file:
 $ bin/test <path/to/file>
 ```
 
-**NB** tests require testthat version > 2.0.0 to run as expected.
+**NB** tests require `testthat version > 2.0.0 to run as expected.
 
